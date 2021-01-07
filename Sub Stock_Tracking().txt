@@ -1,0 +1,123 @@
+Sub Stock_Tracking()
+
+'Begin Loop to run through all worksheets, based upon activity with WF data
+For Each ws In Worksheets
+
+'Set variable to hold ticker name
+Dim TickerName As String
+
+'Set variable to hold ticker volume
+Dim volume As Double
+volume = 0
+
+' Keep track of the location for ticker summary table, used Credit Card activity as a guide
+  Dim Summary_Table_Row As Integer
+  Summary_Table_Row = 2
+
+'Set initial OpenPrice including variable, re-order based upon work with study group
+Dim OpenPrice As Double
+
+OpenPrice = ws.Cells(2, 3).Value
+
+'Set other needed variables
+Dim ClosePrice As Double
+Dim YearlyChange As Double
+Dim PercentChange As Double
+
+'Create header titles for summary table
+
+    ws.Cells(1, 10).Value = "Ticker"
+    ws.Cells(1, 11).Value = "Yearly Change"
+    ws.Cells(1, 12).Value = "Percent Change"
+    ws.Cells(1, 13).Value = "Total Stock Volume"
+
+'Determine number of rows in column
+lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+'Loop through tickers
+For I = 2 To lastrow
+
+  'Check if same ticker
+  If ws.Cells(I + 1, 1).Value <> ws.Cells(I, 1).Value Then
+
+    'Set ticker name
+     TickerName = ws.Cells(I, 1).Value
+
+     'Add volume of ticker
+     volume = volume + ws.Cells(I, 7).Value
+
+    'Capture ticker name in summary table
+     ws.Range("J" & Summary_Table_Row).Value = TickerName
+
+    'Capure ticker volume in summary table
+    ws.Range("M" & Summary_Table_Row).Value = volume
+
+    'Collect information on closing price
+    ClosePrice = ws.Cells(I, 6).Value
+
+    'Calculate and capture yearly change
+    YearlyChange = (ClosePrice - OpenPrice)
+
+    ws.Range("K" & Summary_Table_Row).Value = YearlyChange
+
+    'Check for instances where the opening price is zero, which would fail division calculation
+     If OpenPrice = 0 Then
+      PercentChange = 0
+     Else
+      PercentChange = YearlyChange / OpenPrice
+        End If
+
+    'Capture the percent change
+     ws.Range("L" & Summary_Table_Row).Value = PercentChange
+
+    'Set format for percent change values
+     ws.Range("L" & Summary_Table_Row).NumberFormat = "0.00%"
+     
+        'Reset row counter
+        Summary_Table_Row = Summary_Table_Row + 1
+
+        'Reset ticker volume
+        volume = 0
+
+        'Reset the opening price
+        OpenPrice = ws.Cells(I + 1, 3)
+
+Else
+
+    'Add volume of trades
+    volume = volume + ws.Cells(I, 7).Value
+    
+    End If
+    
+
+Next I
+
+'Set conditional formatting that will highlight positive as green and negative as red
+'Determined that this process needed to take place as its own loop otherwise highlighting would occur along with the original data
+
+'Find last row of the summary table
+lastrow_summary_table = ws.Cells(Rows.Count, 10).End(xlUp).Row
+
+For j = 2 To lastrow_summary_table
+
+  If ws.Cells(j, 11).Value > 0 Then
+     ws.Cells(j, 11).Interior.ColorIndex = 10
+
+  Else
+
+      ws.Cells(j, 11).Interior.ColorIndex = 3
+
+  End If
+
+Next j
+
+'Close loop for cycling through worksheets
+Next ws
+
+End Sub
+
+
+
+
+
+
